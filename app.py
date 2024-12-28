@@ -1,10 +1,9 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
 import io
 import re
 import csv
-from fpdf import FPDF
 
 app = Flask(__name__)
 
@@ -23,9 +22,9 @@ def ocr():
         psm = request.form.get("psm", "3")  # Modo padrão: Automático
         oem = request.form.get("oem", "3")  # Mecanismo padrão: LSTM OCR
         preprocess = request.form.get("preprocess", "")
-        extract_fields = request.form.get("extract_fields", "")  # Campos personalizados separados por vírgulas
+        extract_fields = request.form.get("extract_fields", "false").lower() == "true"
         detect_tables = request.form.get("detect_tables", "false").lower() == "true"
-        output_format = request.form.get("output_format", "text")  # text, json, csv, pdf
+        output_format = request.form.get("output_format", "text")  # text, json, csv
 
         # Pré-processamento de imagem, se configurado
         if preprocess == "grayscale":
@@ -44,17 +43,11 @@ def ocr():
 
         # Extração de campos específicos
         if extract_fields:
-            fields = extract_fields.split(",")  # Separar os campos solicitados
-            extracted_fields = {}
-            for field in fields:
-                if field == "cpf":
-                    extracted_fields["cpf"] = re.findall(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b", raw_text)
-                elif field == "dates":
-                    extracted_fields["dates"] = re.findall(r"\b\d{2}/\d{2}/\d{4}\b", raw_text)
-                elif field == "values":
-                    extracted_fields["values"] = re.findall(r"\b\d+,\d{2}\b", raw_text)
-                else:
-                    extracted_fields[field] = re.findall(field, raw_text)
+            extracted_fields = {
+                "cpf": re.findall(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b", raw_text),
+                "dates": re.findall(r"\b\d{2}/\d{2}/\d{4}\b", raw_text),
+                "values": re.findall(r"\b\d+,\d{2}\b", raw_text),
+            }
             return jsonify({"fields": extracted_fields})
 
         # Detecção de tabelas
@@ -73,16 +66,6 @@ def ocr():
             writer.writerows([line.split() for line in raw_text.split("\n")])
             output.seek(0)
             return output.getvalue(), 200, {"Content-Type": "text/csv"}
-        elif output_format == "pdf":
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            for line in raw_text.split("\n"):
-                pdf.cell(0, 10, line, ln=True)
-            pdf_output = io.BytesIO()
-            pdf.output(pdf_output)
-            pdf_output.seek(0)
-            return send_file(pdf_output, mimetype="application/pdf", as_attachment=True, download_name="output.pdf")
         else:
             return raw_text
 
