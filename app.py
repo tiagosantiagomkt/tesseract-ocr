@@ -11,7 +11,7 @@ pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 def ocr():
     file = request.files["image"]
     image = Image.open(file.stream)
-    text = pytesseract.image_to_string(image)
+    text = pytesseract.image_to_string(image, lang="por")
     return {"text": text}
 
 if __name__ == "__main__":
