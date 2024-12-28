@@ -1,20 +1,19 @@
 # Use uma imagem base do Python leve
 FROM python:3.9-slim
 
-# Atualize os pacotes do sistema e instale o Tesseract OCR, o idioma português e o curl
+# Atualize os pacotes do sistema e instale o Tesseract OCR
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
-    tesseract-ocr-por \
     libtesseract-dev \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Baixar o arquivo de idioma português diretamente, caso necessário
-RUN mkdir -p /usr/share/tesseract-ocr/4.00/tessdata && \
-    curl -Lo /usr/share/tesseract-ocr/4.00/tessdata/por.traineddata https://github.com/tesseract-ocr/tessdata/raw/master/por.traineddata
+# Baixe o arquivo de idioma português (por.traineddata) diretamente de um repositório confiável
+RUN mkdir -p /usr/share/tesseract-ocr/5.0/tessdata && \
+    curl -Lo /usr/share/tesseract-ocr/5.0/tessdata/por.traineddata \
+    https://github.com/tesseract-ocr/tessdata/raw/master/por.traineddata
 
 # Defina a variável de ambiente TESSDATA_PREFIX para o diretório correto
-ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5.0/
 
 # Instale as dependências do Python
 COPY requirements.txt /app/requirements.txt
