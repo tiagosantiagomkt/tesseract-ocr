@@ -1,11 +1,12 @@
 # Use uma imagem base do Python leve
 FROM python:3.9-slim
 
-# Atualize os pacotes do sistema e instale o Tesseract OCR e o idioma português
+# Atualize os pacotes do sistema e instale o Tesseract OCR, o idioma português e o curl
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-por \
     libtesseract-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Baixar o arquivo de idioma português diretamente, caso necessário
