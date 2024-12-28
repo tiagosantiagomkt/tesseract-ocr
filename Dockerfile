@@ -1,8 +1,9 @@
 # Use uma imagem base do Python leve
 FROM python:3.9-slim
 
-# Atualize os pacotes do sistema e instale o Tesseract OCR
+# Instale o curl e outras dependências necessárias
 RUN apt-get update && apt-get install -y \
+    curl \
     tesseract-ocr \
     libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
