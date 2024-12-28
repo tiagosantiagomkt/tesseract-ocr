@@ -1,22 +1,24 @@
-# Use uma imagem base do Python leve
-FROM python:3.9-slim
-
-# Atualize os pacotes do sistema e instale o Tesseract OCR
+# Instale as dependências necessárias para compilar o Tesseract
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    libtesseract-dev \
-    && rm -rf /var/lib/apt/lists/*
+    autoconf \
+    automake \
+    build-essential \
+    ca-certificates \
+    g++ \
+    git \
+    libtool \
+    libleptonica-dev \
+    pkg-config \
+    wget \
+    zlib1g-dev
 
-# Instale as dependências do Python
-COPY requirements.txt /app/requirements.txt
-WORKDIR /app
-RUN pip install --no-cache-dir -r requirements.txt
+# Clone o repositório oficial do Tesseract
+RUN git clone https://github.com/tesseract-ocr/tesseract.git /tesseract
 
-# Copie o código da aplicação
-COPY . /app
-
-# Exponha a porta 5000
-EXPOSE 5000
-
-# Comando padrão para rodar a aplicação
-CMD ["python", "app.py"]
+# Compile e instale o Tesseract a partir do código-fonte
+WORKDIR /tesseract
+RUN ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install && \
+    ldconfig
