@@ -1,3 +1,6 @@
+# Use uma imagem base do Debian slim
+FROM debian:bullseye-slim
+
 # Instale as dependências necessárias para compilar o Tesseract
 RUN apt-get update && apt-get install -y \
     autoconf \
@@ -22,3 +25,16 @@ RUN ./autogen.sh && \
     make && \
     make install && \
     ldconfig
+
+# Configure o diretório de trabalho e copie o código da aplicação
+WORKDIR /app
+COPY . .
+
+# Instale as dependências do Python
+RUN apt-get install -y python3-pip && pip3 install -r requirements.txt
+
+# Exponha a porta 5000
+EXPOSE 5000
+
+# Comando padrão para rodar a aplicação
+CMD ["python3", "app.py"]
