@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Defina a variável de ambiente TESSDATA_PREFIX para o diretório correto
-ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5.0/
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/
 
 # Instale as dependências do Python
 COPY requirements.txt /app/requirements.txt
@@ -24,3 +24,4 @@ EXPOSE 5000
 
 # Comando padrão para rodar a aplicação
 CMD ["python", "app.py"]
+
