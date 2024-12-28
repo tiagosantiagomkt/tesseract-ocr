@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Defina a variável de ambiente TESSDATA_PREFIX para o diretório correto
-ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/
+# Ajuste o diretório de dados do Tesseract se necessário
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/
 
 # Instale as dependências do Python
 COPY requirements.txt /app/requirements.txt
