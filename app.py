@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
-import io
 import re
+import io
 import csv
 
 app = Flask(__name__)
@@ -22,7 +22,7 @@ def ocr():
         psm = request.form.get("psm", "3")  # Modo padrão: Automático
         oem = request.form.get("oem", "3")  # Mecanismo padrão: LSTM OCR
         preprocess = request.form.get("preprocess", "")
-        extract_fields = request.form.get("extract_fields", "false").lower() == "true"
+        extract_fields = request.form.get("extract_fields", "")  # Campos para extração (em JSON)
         detect_tables = request.form.get("detect_tables", "false").lower() == "true"
         output_format = request.form.get("output_format", "text")  # text, json, csv
 
@@ -41,14 +41,20 @@ def ocr():
         # Executar OCR
         raw_text = pytesseract.image_to_string(image, lang=lang, config=config)
 
-        # Extração de campos específicos
+        # Extração de campos específicos, se fornecidos
         if extract_fields:
-            extracted_fields = {
-                "cpf": re.findall(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b", raw_text),
-                "dates": re.findall(r"\b\d{2}/\d{2}/\d{4}\b", raw_text),
-                "values": re.findall(r"\b\d+,\d{2}\b", raw_text),
-            }
-            return jsonify({"fields": extracted_fields})
+            try:
+                fields = eval(extract_fields)  # Converter JSON string para dicionário
+                if not isinstance(fields, dict):
+                    raise ValueError("Os campos para extração devem ser um dicionário.")
+                
+                extracted_data = {}
+                for field, regex in fields.items():
+                    extracted_data[field] = re.findall(regex, raw_text)
+
+                return jsonify({"extracted_fields": extracted_data})
+            except Exception as e:
+                return jsonify({"error": f"Erro ao processar os campos específicos: {str(e)}"}), 400
 
         # Detecção de tabelas
         if detect_tables:
@@ -71,6 +77,10 @@ def ocr():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 
 
 if __name__ == "__main__":
