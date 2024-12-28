@@ -4,7 +4,7 @@ FROM python:3.9-slim
 # Atualize os pacotes do sistema e instale o Tesseract OCR e o idioma português
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
-    tesseract-ocr-por \  # Instalação do idioma português
+    tesseract-ocr-por \
     libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
 
