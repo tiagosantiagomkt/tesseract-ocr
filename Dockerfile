@@ -1,40 +1,22 @@
-# Use uma imagem base do Debian slim
-FROM debian:bullseye-slim
+# Use uma imagem base do Python leve
+FROM python:3.9-slim
 
-# Instale as dependências necessárias para compilar o Tesseract
+# Atualize os pacotes do sistema e instale o Tesseract OCR
 RUN apt-get update && apt-get install -y \
-    autoconf \
-    automake \
-    build-essential \
-    ca-certificates \
-    g++ \
-    git \
-    libtool \
-    libleptonica-dev \
-    pkg-config \
-    wget \
-    zlib1g-dev
-
-# Clone o repositório oficial do Tesseract
-RUN git clone https://github.com/tesseract-ocr/tesseract.git /tesseract
-
-# Compile e instale o Tesseract a partir do código-fonte
-WORKDIR /tesseract
-RUN ./autogen.sh && \
-    ./configure && \
-    make && \
-    make install && \
-    ldconfig
-
-# Configure o diretório de trabalho e copie o código da aplicação
-WORKDIR /app
-COPY . .
+    tesseract-ocr \
+    libtesseract-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Instale as dependências do Python
-RUN apt-get install -y python3-pip && pip3 install -r requirements.txt
+COPY requirements.txt /app/requirements.txt
+WORKDIR /app
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copie o código da aplicação
+COPY . /app
 
 # Exponha a porta 5000
 EXPOSE 5000
 
 # Comando padrão para rodar a aplicação
-CMD ["python3", "app.py"]
+CMD ["python", "app.py"]
